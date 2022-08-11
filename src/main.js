@@ -1,4 +1,94 @@
-const ContenedorPeliculas = document.getElementById('peliculas');
+const api = axios.create({
+    baseURL: 'https://api.themoviedb.org/3/',
+    header: {
+        'content-type': 'application/json;charset=utf-8',
+    },
+    params:{
+        'api_key': API_KEY,
+    },
+});
+
+
+const trendingContainerMovies = document.getElementById("trending-container-movies")
+const trendingContainerTvs = document.getElementById("trending-container-tvs")
+const categoriesListContainer = document.getElementById("categories-list-container") 
+
+
+async function getTrendingMoviesPreview(){
+    trendingContainerMovies.innerHTML = '';
+    const { data } = await api('trending/movie/day');
+    const movies = data.results
+    console.log(movies)
+    movies.forEach(element => {
+        let movie = `
+        <div class="movie-container">
+            <img
+            src="https://image.tmdb.org/t/p/w300${element.poster_path}"
+            class="movie-img"
+            alt="${element.title}"
+            />
+            <p class="title" >${element.title}</p>
+        </div>
+        `
+        trendingContainerMovies.innerHTML += movie;
+    });
+}
+
+async function getTrendingTvPreview(){
+    trendingContainerTvs.innerHTML = '';
+    const { data } = await api('trending/tv/day');
+    const tvs = data.results
+    tvs.forEach(element => {
+        let tv = `
+        <div class="tv-container">
+            <img
+            src="https://image.tmdb.org/t/p/w300${element.poster_path}"
+            class="tv-img"
+            alt="${element.name}"
+            />
+            <p class="title" >${element.name}</p>
+        </div>
+        `
+        trendingContainerTvs.innerHTML += tv;
+    });
+}
+
+
+
+async function getCategoriesPreview(){
+    categoriesListContainer.innerHTML = '';
+    const {data} = await api('genre/movie/list');
+    const categories = data.genres
+    categories.forEach(element => {
+        let categorie = `
+            <div class="category-container">
+                    <h3 id="id${element.id}" class="category-title">${element.name}</h3>
+            </div>
+        `
+        categoriesListContainer.innerHTML += categorie;
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*const ContenedorPeliculas = document.getElementById('peliculas');
 const ContenedorModal = document.getElementById('contenedor-modal');
 const modal = document.getElementById('modal');
 const imagenModal = document.getElementById('imagen-pelicula');
@@ -47,3 +137,5 @@ const ObtenerPeliculaSeleccionada = async (id) => {
     imagenModal.appendChild(img);
 
 }
+*/
+
