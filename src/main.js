@@ -8,17 +8,9 @@ const api = axios.create({
     },
 });
 
-
-const trendingContainerMovies = document.getElementById("trending-container-movies")
-const trendingContainerTvs = document.getElementById("trending-container-tvs")
-const categoriesListContainer = document.getElementById("categories-list-container") 
-
-
-async function getTrendingMoviesPreview(){
-    trendingContainerMovies.innerHTML = '';
-    const { data } = await api('trending/movie/day');
-    const movies = data.results
-    console.log(movies)
+//Utils
+function createMovies(movies, container){
+    container.innerHTML='';
     movies.forEach(element => {
         let movie = `
         <div class="movie-container">
@@ -26,18 +18,25 @@ async function getTrendingMoviesPreview(){
             src="https://image.tmdb.org/t/p/w300${element.poster_path}"
             class="movie-img"
             alt="${element.title}"
+            onclick="SelectionMovieForDetail(${element.id})"
             />
             <p class="title" >${element.title}</p>
         </div>
         `
-        trendingContainerMovies.innerHTML += movie;
+        container.innerHTML += movie;
     });
 }
 
-async function getTrendingTvPreview(){
-    trendingContainerTvs.innerHTML = '';
-    const { data } = await api('trending/tv/day');
-    const tvs = data.results
+function SelectionMovieForDetail(id){
+    location.hash = `#movie=${id}`;
+}
+
+
+
+
+
+function createTvs(tvs, container){
+    container.innerHTML='';
     tvs.forEach(element => {
         let tv = `
         <div class="tv-container">
@@ -45,97 +44,159 @@ async function getTrendingTvPreview(){
             src="https://image.tmdb.org/t/p/w300${element.poster_path}"
             class="tv-img"
             alt="${element.name}"
+            onclick="SelectionTvForDetail(${element.id})"
             />
             <p class="title" >${element.name}</p>
         </div>
         `
-        trendingContainerTvs.innerHTML += tv;
+        container.innerHTML += tv;
     });
+}
+
+function SelectionTvForDetail(id){
+    location.hash = `#tv=${id}`;
 }
 
 
 
-async function getCategoriesPreview(){
-    categoriesListContainer.innerHTML = '';
-    const {data} = await api('genre/movie/list');
-    const categories = data.genres
+function createCategories(categories, container){
+    container.innerHTML='';
     categories.forEach(element => {
         let categorie = `
             <div class="category-container">
-                    <h3 id="id${element.id}" class="category-title">${element.name}</h3>
+                    <h3 
+                        id="id${element.id}" 
+                        class="category-title"
+                        onclick="SelectionMoviesForCategory(${element.id}, '${element.name}')"
+                    >${element.name}</h3>
             </div>
         `
-        categoriesListContainer.innerHTML += categorie;
+        container.innerHTML += categorie;
     });
 }
 
 
+function SelectionMoviesForCategory(id, name){
+    location.hash = "#category=" + id + "-" + name;
+}
+
+
+async function getTrendingMoviesPreview(){
+    trendingContainerMovies.innerHTML = '';
+    const { data } = await api('trending/movie/day');
+    const movies = data.results;
+
+    createMovies(movies, trendingContainerMovies);
+}
+
+async function getMovieTrends(){
+    const { data } = await api('trending/movie/day');
+    const movies = data.results;
+
+    createMovies(movies, listMoviesOrTvs);
+}
+
+async function getTrendingTvPreview(){
+    const { data } = await api('trending/tv/day');
+    const tvs = data.results;    
+    createTvs(tvs, trendingContainerTvs);
+}
+async function getTvTrends(){
+    const { data } = await api('trending/tv/day');
+    const tvs = data.results;    
+    createTvs(tvs, listMoviesOrTvs);
+}
+
+
+async function getCategoriesPreview(){
+    const {data} = await api('genre/movie/list');
+    const categories = data.genres
+    createCategories(categories, categoriesListContainer);
+}
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*const ContenedorPeliculas = document.getElementById('peliculas');
-const ContenedorModal = document.getElementById('contenedor-modal');
-const modal = document.getElementById('modal');
-const imagenModal = document.getElementById('imagen-pelicula');
-const contenidoPelicula = document.getElementById('contenido-pelicula');
-const tituloPelicula = document.getElementById('titulo-pelicula');
-
-
-const ObtenerPelicula = async () => {
-    const respuesta = await fetch(url);
-    const datos = await respuesta.json();
-    console.log(datos);
-    datos.results.forEach(element => {
-        peliculas+= `
-        <div class="pelicula">
-            <button class="ver-mas" onclick="abrir(${element.id})"> 
-                <img class = "poster" src="https://image.tmdb.org/t/p/w500${element.poster_path}">
-            </button>    
-            <p class="titulo">${element.title}</p>
-            
-        </div>` 
+async function getMoviesByCategory(id){
+    const { data } = await api('discover/movie', {
+        params:{
+            with_genres : id,
+        }
     });
-    ContenedorPeliculas.innerHTML = peliculas;
-}
-function abrir(id){
-    ObtenerPeliculaSeleccionada(id);
+    const movies = data.results;
+    createMovies(movies, listMoviesOrTvs );
 }
 
-ObtenerPelicula();
 
-const ObtenerPeliculaSeleccionada = async (id) => {
-    const respuesta = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=786ee52ce60c9ebb3805127db53d7f67`);
+async function getMoviesBySearch(query){
+    const { data } = await api('search/movie', {
+        params:{
+            query,
+        }
+    });
+    const movies = data.results;
+    createMovies(movies, listMoviesOrTvs );
+}
+
+async function getMovieDetail(id){
     
-    const data = await respuesta.json();
-    console.log(data);
-    //ContenedorPeliculas.className = "hide";
-    ContenedorModal.classList.remove("hide");
-    contenidoPelicula.innerHTML = "";
-    imagenModal.innerHTML="";
-    let img = document.createElement('img')
-    img.src = `https://image.tmdb.org/t/p/w500${data.poster_path}`
-    let sinopsis = document.createElement('p');
-    sinopsis.innerHTML = data.overview;
+    const { data } = await api(`movie/${id}`);
+    const movie = data;
+    console.log(movie);
     
-    tituloPelicula.innerHTML= data.title;
-    contenidoPelicula.appendChild(sinopsis);
-    imagenModal.appendChild(img);
+    titleMovie.innerHTML = movie.title;
+    
+    movieDetailScore.textContent = movie.status;
+    releaseDate.innerHTML = movie.release_date
+    popularity.innerHTML = movie.popularity
+    voteAverage.innerHTML = movie.vote_average
+    voteCount.innerHTML = movie.vote_count
+    moviedescription.innerHTML = movie.overview
+    movieDetailImg.src = `https://image.tmdb.org/t/p/w300${movie.poster_path}`
 
+    createCategories( movie.genres, categorysMovieSelect);
+
+    getRelatedMoviesbyId(id)
 }
-*/
 
+async function getRelatedMoviesbyId(id){
+    const data = await api(`/movie/${id}/similar`)
+    let similar = data.data.results;
+    createMovies(similar, MoviesOrTvSimilars);
+    MoviesOrTvSimilars.scroll(0,0);
+}
+
+
+
+
+ 
+
+async function getTvDetail(id){
+    
+
+    const { data } = await api(`tv/${id}`);
+    const tv = data;
+    console.log(tv);
+    
+    titleMovie.innerHTML = tv.name;
+    
+    movieDetailScore.textContent = tv.status;
+    releaseDate.innerHTML = tv.first_air_date;
+    popularity.innerHTML = tv.popularity;
+    voteAverage.innerHTML = tv.vote_average;
+    voteCount.innerHTML = tv.vote_count;
+    moviedescription.innerHTML = tv.overview;
+    movieDetailImg.src = `https://image.tmdb.org/t/p/w300${tv.poster_path}`;
+
+    createCategories( tv.genres, categorysMovieSelect);
+    getRelatedTvbyId(id)
+}
+
+async function getRelatedTvbyId(id){
+    const data = await api(`/tv/${id}/similar`)
+    let similar = data.data.results;
+    console.log(data)
+    console.log(similar)
+    createTvs(similar, MoviesOrTvSimilars);
+    MoviesOrTvSimilars.scroll(0,0);
+}
