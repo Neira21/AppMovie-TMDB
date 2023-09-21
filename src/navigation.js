@@ -20,8 +20,9 @@ backButton.addEventListener('click', () => {
     
     history.back();
     console.log(window.location)
-    if(window.location.href.includes('#home')){
+    if(window.location.hash===''){
         window.reload();
+        console.log("reloaded")
     }
     
 })
@@ -50,7 +51,6 @@ function navigator(){
 
     }else if(location.hash.startsWith('#category=')){
         categoryPage();
-        
     }else{
         homePage();
     }
@@ -58,12 +58,11 @@ function navigator(){
 }
 
 function homePage(){
-    console.log('HOME!!');
+    console.log('Recargar 1 vez');
     backButton.classList.add('hide');
     getTrendingMoviesPreview();
     getTrendingTvPreview();
     getCategoriesPreview();
-
     movies.classList.add('hide');
     detail.classList.add('hide');
 }

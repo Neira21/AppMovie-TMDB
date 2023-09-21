@@ -9,8 +9,10 @@ const api = axios.create({
 });
 
 //Utils
-function createMovies(movies, container){
-    container.innerHTML='';
+function createMovies(movies, container, clean ){
+    if(clean){
+        container.innerHTML='';
+    }
     movies.forEach(element => {
         let movie = `
         <div class="movie-container">
@@ -30,10 +32,6 @@ function createMovies(movies, container){
 function SelectionMovieForDetail(id){
     location.hash = `#movie=${id}`;
 }
-
-
-
-
 
 function createTvs(tvs, container){
     container.innerHTML='';
@@ -56,8 +54,6 @@ function createTvs(tvs, container){
 function SelectionTvForDetail(id){
     location.hash = `#tv=${id}`;
 }
-
-
 
 function createCategories(categories, container){
     container.innerHTML='';
@@ -93,8 +89,39 @@ async function getMovieTrends(){
     const { data } = await api('trending/movie/day');
     const movies = data.results;
 
-    createMovies(movies, listMoviesOrTvs);
+    createMovies(movies, listMoviesOrTvs, true);
+
+    const btn = document.createElement('button');
+    btn.innerHTML = 'Load More';
+    
+    btn.onclick = () => {
+        
+        getMoreMoviesTrending();
+    }
+    listMoviesOrTvs.appendChild(btn);
 }
+
+let pages=1;
+
+async function getMoreMoviesTrending(){
+    pages++;
+    const { data } = await api('trending/movie/day', {
+        params:{
+            pages:2,
+        }
+    });
+    const movies = data.results;
+    createMovies(movies, listMoviesOrTvs);
+    const btn = document.createElement('button');
+    btn.innerHTML = 'Load More';
+    
+    btn.onclick = () => {
+        
+        getMoreMoviesTrending();
+    }
+    listMoviesOrTvs.appendChild(btn);
+}
+
 
 async function getTrendingTvPreview(){
     const { data } = await api('trending/tv/day');
