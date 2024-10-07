@@ -17,21 +17,20 @@ seeAllTv.addEventListener('click', () => {
 
 
 backButton.addEventListener('click', () => {
-    
     history.back();
-    console.log(window.location)
-    if(window.location.hash===''){
-        window.reload();
-        console.log("reloaded")
-    }
-    
 })
 
 window.addEventListener('DOMContentLoaded', navigator, false);
 window.addEventListener('hashchange', navigator, false);
 
 
-
+window.addEventListener('popstate', () => {
+  // Si no hay un hash en la URL, recargar la página
+  if (window.location.hash === '') {
+      window.location.reload();
+      console.log("Página recargada después de navegar hacia atrás");
+  }
+});
 
 function navigator(){
     console.log({location});
